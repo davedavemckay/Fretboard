@@ -15,7 +15,20 @@ class EqualTemperament:
     def __init__(self, A4=440.0):
         self.A4 = A4
         self.semitone = 2 ** (1/12)
-        self.note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+        self.note_names = {
+            0:['C'], 
+            1:'C#', 
+            2:'D', 
+            3:'D#', 
+            4:'E', 
+            5:'F', 
+            6:'F#', 
+            7:'G', 
+            8:'G#', 
+            9:'A', 
+            10:'A#', 
+            11:'B',
+            }
         self.all_note_names = [f'{note_name}{octave}' for octave in range(0, 9) for note_name in self.note_names]
         self.intervals = {
             0:['1'],
@@ -46,8 +59,7 @@ class EqualTemperament:
         """
         if type(interval) == int:
             interval = str(interval)
-        if interval.startswith('bb'):
-            interval = self.intervals[(self.intervals.index(interval[-1])-2) % len(self.intervals)]
-        return self.note_names[(self.note_names.index(root) + self.intervals.index(interval)) % len(self.note_names)]
+        return self.note_names[(self.note_names.index(root) + next(key for key, value in self.intervals.items() if interval in value))  % len(self.note_names)]
+        #return self.note_names[(self.note_names.index(root) + self.intervals.index(interval)) % len(self.note_names)]
     
 equal_temperament = EqualTemperament()
