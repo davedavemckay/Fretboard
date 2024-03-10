@@ -1,6 +1,7 @@
 from pydub import AudioSegment
 from pydub.playback import play
 
+
 def play_frequency(frequency, duration=1000):
     # Generate sound of given frequency
     sound = AudioSegment.silent(duration=duration)
@@ -11,7 +12,7 @@ def play_frequency(frequency, duration=1000):
 
 def play_chord(chord, octave=4, duration=1000):
     # Generate sounds of the frequencies of the notes in the chord
-    sounds = [AudioSegment.silent(duration=duration)._spawn(AudioSegment.silent(duration=duration).raw_data, overrides={'frame_rate': AudioSegment.silent(duration=duration).frame_rate}).set_frame_rate(frequency) for frequency in get_frequencies(chord, octave)]
+    sounds = [AudioSegment.silent(duration=duration)._spawn(AudioSegment.silent(duration=duration).raw_data, overrides={'frame_rate': AudioSegment.silent(duration=duration).frame_rate}).set_frame_rate(frequency) for frequency in chord.get_frequencies(chord, octave)]
     # Play the sounds
     play(sum(sounds))
 
