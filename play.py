@@ -1,14 +1,26 @@
 from pydub import AudioSegment
 from pydub.playback import play
-
+import tempfile
+import os
+# from time import sleep
+os.environ['TMP'] = '.'
+os.environ['TEMP'] = '.'
 
 def play_frequency(frequency, duration=1000):
     # Generate sound of given frequency
     sound = AudioSegment.silent(duration=duration)
-    sound = sound._spawn(sound.raw_data, overrides={'frame_rate': sound.frame_rate})
+    sound = sound._spawn(sound.raw_data, overrides={'sample_rate': 44100})
     sound = sound.set_frame_rate(frequency)
-    # Play the sound
-    play(sound)
+    
+    # Export to a temporary file and play it
+    _, temp_path = tempfile.mkstemp()
+    sound.export(temp_path, format="wav")
+    
+    with open(temp_path, 'rb') as f:
+        play(AudioSegment.from_wav(f))
+    
+    # Delete the temporary file
+    # os.remove(temp_path)
 
 def play_chord(chord, octave=4, duration=1000):
     # Generate sounds of the frequencies of the notes in the chord
