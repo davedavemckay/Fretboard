@@ -11,6 +11,14 @@ class Chord:
             note_names.append(et.interval_to_note_name(self.root, interval))
         return note_names
     
+    def get_frequencies(self, octave):
+        frequencies = []
+        for i,note_name in enumerate(self.get_note_names()):
+            if self.intervals[i] > 7:
+                frequencies.append(et.note_name_to_frequency(note_name, octave+1))
+            frequencies.append(et.note_name_to_frequency(note_name, octave))
+        return frequencies
+    
     def __str__(self) -> str:
         return f"Chord({self.root}, {self.intervals})"
     

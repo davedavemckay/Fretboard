@@ -12,24 +12,24 @@ class EqualTemperament:
         interval_to_note_name(root, interval): Returns the note name that is a given interval away from the root note.
     """
 
-    def __init__(self, A4=440.0):
+    def __init__(self, A4=440):
         self.A4 = A4
         self.semitone = 2 ** (1/12)
         self.note_names = {
-            0:['C'], 
-            1:'C#', 
-            2:'D', 
-            3:'D#', 
-            4:'E', 
-            5:'F', 
-            6:'F#', 
-            7:'G', 
-            8:'G#', 
-            9:'A', 
-            10:'A#', 
-            11:'B',
-            }
-        self.all_note_names = [f'{note_name}{octave}' for octave in range(0, 9) for note_name in self.note_names]
+            0:['C','B#'], 
+            1:['C#','Db'], 
+            2:['D','C##'], 
+            3:['D#','Eb'], 
+            4:['E','Fb','D##'], 
+            5:['F','E#'], 
+            6:['F#','Gb'], 
+            7:['G','F##'], 
+            8:['G#','Ab'], 
+            9:['A','G##'], 
+            10:['A#','Bb'], 
+            11:['B','Cb','A##'],
+        }
+        self.all_note_names = [f'{note_name[0]}{octave}' for octave in range(0, 9) for note_name in self.note_names.values()]
         self.intervals = {
             0:['1'],
             1:['b2'],
@@ -42,7 +42,22 @@ class EqualTemperament:
             8:['#5','b6'],
             9:['6','bb7'],
             10:['#6','b7'],
-            11:['7']}
+            11:['7'],
+        }
+    
+    def note_name_to_frequency(self, note_name, octave):
+        """
+        Calculate the frequency of a note in equal temperament.
+
+        Parameters:
+        - note_name (str): The name of the note (e.g., 'A', 'C', 'D')
+        - octave (int): The octave number of the note
+
+        Returns:
+        - float: The frequency of the note in Hertz
+        """
+        note = self.all_note_names.index(f'{note_name}{octave}') - self.all_note_names.index('A4')
+        return round(self.A4 * (self.semitone ** note))
 
     def interval_to_note_name(self, root, interval):
         """
@@ -59,7 +74,38 @@ class EqualTemperament:
         """
         if type(interval) == int:
             interval = str(interval)
-        return self.note_names[(self.note_names.index(root) + next(key for key, value in self.intervals.items() if interval in value))  % len(self.note_names)]
-        #return self.note_names[(self.note_names.index(root) + self.intervals.index(interval)) % len(self.note_names)]
+        interval_index = next(key for key, value in self.intervals.items() if interval in value)
+        root_index = next((index for index, names in self.note_names.items() if root in names), None)
+        if root_index is not None:
+            return self.note_names[(root_index + interval_index) % len(self.note_names)][0]
+        else:
+            return None
+    
+    def frequency(self, note_name, octave):
+        """
+        Calculate the frequency of a note in equal temperament.
+
+        Parameters:
+        - note_name (str): The name of the note (e.g., 'A', 'C', 'D')
+        - octave (int): The octave number of the note
+
+        Returns:
+        - float: The frequency of the note in Hertz
+        """
+        note = self.all_note_names.index(f'{note_name}{octave}') - self.all_note_names.index('A4')
+        return round(self.A4 * (self.semitone ** note))
+    
+    def frequency_at_fret(self, tuning, fret):
+        """
+        Calculates the frequency of the note at a given fret on the string.
+        
+        Args:
+            tuning (str): The tuning note of the string.
+            fret (int): The fret number.
+        
+        Returns:
+            float: The frequency of the note at the specified fret.
+        """
+        return round(self.frequency(tuning[:-1], int(tuning[-1])) * (self.semitone ** fret))
     
 equal_temperament = EqualTemperament()

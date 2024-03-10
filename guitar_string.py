@@ -43,7 +43,7 @@ class GuitarString:
             return self.tuning
         index = (et.all_note_names.index(self.tuning) + fret) % len(et.note_names)
         octave = (et.all_note_names.index(self.tuning) + fret) // len(et.note_names)
-        return f'{et.note_names[index]}{octave}'
+        return f'{et.note_names[index][0]}{octave}'
     
     def distance_from_A4(self):
         """
@@ -64,7 +64,7 @@ class GuitarString:
         Returns:
             float: The frequency of the note at the specified fret.
         """
-        return et.A4 * (et.semitone ** (self.note + fret))
+        return et.frequency_at_fret(self.tuning, fret)
     
     def frequency(self):
         """
@@ -73,7 +73,7 @@ class GuitarString:
         Returns:
             float: The frequency of the open string.
         """
-        return et.A4 * (et.semitone ** self.note)
+        return et.frequency(self.tuning[:-1], int(self.tuning[-1]))
     
     def __str__(self):
         """
