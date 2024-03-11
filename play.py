@@ -52,11 +52,12 @@ beat = 6e4/bpm
 # play_chord(chord.Chord('A', chord.chord_types['major']), 3, beat*4)
 # play_midi.play_midi_chord([et.note_name_to_midi(nn, 2) for nn in chord.Chord('A', chord.chord_types['major']).get_note_names()], beat*4)
 
-chord_progression = [{'root':'D','quality':'major9','inversion':0,'octave':3,'beats':3.5,'rest_beats':0.5},
-                     {'root':'D','quality':'major9','inversion':1,'octave':3,'beats':3.5,'rest_beats':0.5},
-                     {'root':'D','quality':'major9','inversion':2,'octave':3,'beats':3.5,'rest_beats':0.5},
-                     {'root':'D','quality':'major9','inversion':3,'octave':3,'beats':3.5,'rest_beats':0.5},
-                     {'root':'D','quality':'major9','inversion':4,'octave':3,'beats':3.5,'rest_beats':0.5},
+chord_progression = [{'root':'D','quality':'major13','inversion':0,'octave':3,'beats':3.5,'rest_beats':0.5},
+                     {'root':'D','quality':'major13','inversion':1,'octave':3,'beats':3.5,'rest_beats':0.5},
+                     {'root':'D','quality':'major13','inversion':2,'octave':3,'beats':3.5,'rest_beats':0.5},
+                     {'root':'D','quality':'major13','inversion':3,'octave':3,'beats':3.5,'rest_beats':0.5},
+                     {'root':'D','quality':'major13','inversion':4,'octave':3,'beats':3.5,'rest_beats':0.5},
+                     {'root':'D','quality':'major13','inversion':5,'octave':3,'beats':3.5,'rest_beats':0.5},
 ]
 # , 'E', 'F#', 'A',
 #                      'D', 'D', 'A', 'A',

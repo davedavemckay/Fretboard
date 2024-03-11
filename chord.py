@@ -28,30 +28,52 @@ class Chord:
         # hence if inversion >= 3, ValueError
         if self.inversion > 0:
             self.intervals = self.intervals[self.inversion:] + self.intervals[:self.inversion]
-            self.inverted_indices = [i for i in range(-self.inversion,0,-1)] # -1, -2, -3, etc.
-            print(self.inverted_indices)
+            # print(self.inversion)
+            self.inverted_indices = [i for i in range(-1, -self.inversion - 1, -1)]  # -1, -2, -3, etc.
+            # print(self.inverted_indices)
+            # print(-self.inversion)
+            # print([i for i in range(-1, -self.inversion - 1, -1)])
             # print(self.intervals[self.inversion:])
             # print(self.intervals[:self.inversion])
         elif self.inversion < 0:    
             raise ValueError("Inversion cannot be negative.")
         # print(self.intervals)
+        self.intervals_without_accidentals = []
+        self.intervals_in_octave = []
+        self.intervals_without_accidentals_in_octave = []
+        for interval in self.intervals:
+            interval_in_octave = interval
+            if type(interval) == int:
+                interval = str(interval)
+            if interval.startswith('b') or interval.startswith('#'):
+                interval_without_accidental = int(interval[1:])
+            else:
+                interval_without_accidental = int(interval)
+            interval_without_accidental_in_octave = interval_without_accidental
+            if interval_without_accidental_in_octave > 7:
+                interval_without_accidental_in_octave = interval_without_accidental % 7
+                interval_in_octave = interval.replace(str(interval_without_accidental), str(interval_without_accidental_in_octave))
+            self.intervals_without_accidentals.append(interval_without_accidental)
+            self.intervals_in_octave.append(interval_in_octave)
+            self.intervals_without_accidentals_in_octave.append(interval_without_accidental_in_octave)
+            
         # Set up octaves
         # Input octave is the default octave - that of the lowest note in the chord (inversion)
         # If the interval is greater than 7, add 1 to the octave
         # If the interval is less than or equal to the previous interval, add 1 to the octave
         self.octaves = [octave for i in self.intervals]
         for i,interval in enumerate(self.intervals):
-            if int(interval[-1]) > 7:
+            if int(self.intervals_without_accidentals[i]) > 7:
                 self.octaves[i] += 1
-            if i in self.inverted_indices:
-                self.octaves[i] += 1
+        for ii in self.inverted_indices:
+            self.octaves[ii] += 1    
         print(self.intervals, self.octaves)
 
 
     def get_note_names(self):
         note_names = []
-        for i, interval in enumerate(self.intervals):
-            note_names.append(f'{et.interval_to_note_name(self.root, interval)}{self.octaves[i]}')
+        for i, interval_in_octave in enumerate(self.intervals_in_octave):
+            note_names.append(f'{et.interval_to_note_name(self.root, interval_in_octave)}{self.octaves[i]}')
         return note_names
     
     def get_frequencies(self):

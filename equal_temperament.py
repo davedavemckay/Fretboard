@@ -74,15 +74,6 @@ def interval_to_note_name(root, interval):
     Returns:
         str: The note name that is a given interval away from the root note.
     """
-    if type(interval) == int:
-        interval = str(interval)
-    if interval.startswith('b') or interval.startswith('#'):
-        interval_without_accidental = int(interval[1:])
-    else:
-        interval_without_accidental = int(interval)
-    if interval_without_accidental > 7:
-        interval_without_accidental_in_octave = interval_without_accidental % 7
-        interval = interval.replace(str(interval_without_accidental), str(interval_without_accidental_in_octave))
     # print(interval, et.intervals.items())
     interval_index = next(key for key, value in et.intervals.items() if interval in value)
     root_index = next((index for index, names in et.note_names.items() if root in names), None)
