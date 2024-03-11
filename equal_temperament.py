@@ -44,68 +44,89 @@ class EqualTemperament:
             10:['#6','b7'],
             11:['7'],
         }
+
+et = EqualTemperament()
     
-    def note_name_to_frequency(self, note_name, octave):
-        """
-        Calculate the frequency of a note in equal temperament.
+def note_name_to_frequency(note_name, octave):
+    """
+    Calculate the frequency of a note in equal temperament.
 
-        Parameters:
-        - note_name (str): The name of the note (e.g., 'A', 'C', 'D')
-        - octave (int): The octave number of the note
+    Parameters:
+    - note_name (str): The name of the note (e.g., 'A', 'C', 'D')
+    - octave (int): The octave number of the note
 
-        Returns:
-        - float: The frequency of the note in Hertz
-        """
-        note = self.all_note_names.index(f'{note_name}{octave}') - self.all_note_names.index('A4')
-        return round(self.A4 * (self.semitone ** note))
+    Returns:
+    - float: The frequency of the note in Hertz
+    """
+    note = et.all_note_names.index(f'{note_name}{octave}') - et.all_note_names.index('A4')
+    return round(et.A4 * (et.semitone ** note))
 
-    def interval_to_note_name(self, root, interval):
-        """
-        Returns the note name that is a given interval away from the root note.
-        Intervals are based on the Major scale, thus 1,2,3,4,5,6,7 follow the semitone pattern:
-        0,2,4,5,7,9,11,12
+def interval_to_note_name(root, interval):
+    """
+    Returns the note name that is a given interval away from the root note.
+    Intervals are based on the Major scale, thus 1,2,3,4,5,6,7 follow the semitone pattern:
+    0,2,4,5,7,9,11,12
 
-        Args:
-            root (str): The root note name.
-            interval (int): The interval in semitones.
+    Args:
+        root (str): The root note name.
+        interval (str or int): The interval in semitones.
 
-        Returns:
-            str: The note name that is a given interval away from the root note.
-        """
-        if type(interval) == int:
-            interval = str(interval)
-        interval_index = next(key for key, value in self.intervals.items() if interval in value)
-        root_index = next((index for index, names in self.note_names.items() if root in names), None)
-        if root_index is not None:
-            return self.note_names[(root_index + interval_index) % len(self.note_names)][0]
-        else:
-            return None
+    Returns:
+        str: The note name that is a given interval away from the root note.
+    """
+    if type(interval) == int:
+        interval = str(interval)
+    if interval.startswith('b') or interval.startswith('#'):
+        interval_without_accidental = int(interval[1:])
+    else:
+        interval_without_accidental = int(interval)
+    if interval_without_accidental > 7:
+        interval_without_accidental_in_octave = interval_without_accidental % 7
+        interval = interval.replace(str(interval_without_accidental), str(interval_without_accidental_in_octave))
+    # print(interval, et.intervals.items())
+    interval_index = next(key for key, value in et.intervals.items() if interval in value)
+    root_index = next((index for index, names in et.note_names.items() if root in names), None)
+    if root_index is not None:
+        return et.note_names[(root_index + interval_index) % len(et.note_names)][0]
+    else:
+        return None
+
+def note_name_to_midi(note_name, octave):
+    """
+    Calculate the MIDI number of a note.
+
+    Parameters:
+    - note_name (str): The name of the note (e.g., 'A', 'C', 'D')
+    - octave (int): The octave number of the note
+
+    Returns:
+    - int: The MIDI number of the note
+    """
+    return et.all_note_names.index(f'{note_name}{octave}') + 21 # MIDI number of A0 is 21
+
+def frequency(note_name, octave):
+    """
+    Calculate the frequency of a note in equal temperament.
+
+    Parameters:
+    - note_name (str): The name of the note (e.g., 'A', 'C', 'D')
+    - octave (int): The octave number of the note
+
+    Returns:
+    - float: The frequency of the note in Hertz
+    """
+    note = et.all_note_names.index(f'{note_name}{octave}') - et.all_note_names.index('A4')
+    return round(et.A4 * (et.semitone ** note))
+
+def frequency_at_fret(tuning, fret):
+    """
+    Calculates the frequency of the note at a given fret on the string.
     
-    def frequency(self, note_name, octave):
-        """
-        Calculate the frequency of a note in equal temperament.
-
-        Parameters:
-        - note_name (str): The name of the note (e.g., 'A', 'C', 'D')
-        - octave (int): The octave number of the note
-
-        Returns:
-        - float: The frequency of the note in Hertz
-        """
-        note = self.all_note_names.index(f'{note_name}{octave}') - self.all_note_names.index('A4')
-        return round(self.A4 * (self.semitone ** note))
+    Args:
+        tuning (str): The tuning note of the string.
+        fret (int): The fret number.
     
-    def frequency_at_fret(self, tuning, fret):
-        """
-        Calculates the frequency of the note at a given fret on the string.
-        
-        Args:
-            tuning (str): The tuning note of the string.
-            fret (int): The fret number.
-        
-        Returns:
-            float: The frequency of the note at the specified fret.
-        """
-        return round(self.frequency(tuning[:-1], int(tuning[-1])) * (self.semitone ** fret))
-    
-equal_temperament = EqualTemperament()
+    Returns:
+        float: The frequency of the note at the specified fret.
+    """
+    return round(et.frequency(tuning[:-1], int(tuning[-1])) * (et.semitone ** fret))
