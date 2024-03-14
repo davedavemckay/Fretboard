@@ -1,3 +1,4 @@
+import math
 class EqualTemperament:
     """
     Represents an equal temperament scale.
@@ -93,7 +94,10 @@ def note_name_to_midi(note_name, octave):
     Returns:
     - int: The MIDI number of the note
     """
-    return et.all_note_names.index(f'{note_name}{octave}') + 21 # MIDI number of A0 is 21
+    if note_name is None:
+        return None
+    else:
+        return et.all_note_names.index(f'{note_name}{octave}') + 21 # MIDI number of A0 is 21
 
 def frequency(note_name, octave):
     """
@@ -121,3 +125,18 @@ def frequency_at_fret(tuning, fret):
         float: The frequency of the note at the specified fret.
     """
     return round(et.frequency(tuning[:-1], int(tuning[-1])) * (et.semitone ** fret))
+
+def frequency_to_note_name(frequency):
+    """
+    Calculate the note name of a given frequency in equal temperament.
+
+    Parameters:
+    - frequency (float): The frequency of the note in Hertz
+
+    Returns:
+    - str: The name of the note (e.g., 'A', 'C', 'D')
+    """
+    if frequency <= 0:
+        return None
+    note = round(12 * math.log2(frequency / et.A4))
+    return et.all_note_names[note % len(et.all_note_names)]
