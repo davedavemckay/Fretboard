@@ -49,12 +49,16 @@ def calculate_bpm(audio_array, sample_rate, window_size=1024):
     bpm = round(bpm)
     return bpm
 
-def convert_to_notes(audio_array):
+def convert_to_notes(audio_array, sample_rate=44100):
     # Perform Fourier transform
     spectrum = fft(audio_array)
-
+    # print(spectrum)
+    
     # Find dominant frequency
-    dominant_frequency = np.argmax(np.abs(spectrum))
+    dominant_frequency_index = np.argmax(np.abs(spectrum))
+    dominant_frequency = dominant_frequency_index * sample_rate / len(audio_array)
+    # print(dominant_frequency)
+    # exit()
 
     # Convert dominant frequency to note
     if dominant_frequency == 0:
@@ -68,33 +72,33 @@ if __name__ == '__main__':
     # Example usage
     file_path = 'samples/eqt-chromo-sc.wav'
     audio_array, sample_rate = read_wav_file(file_path)
-    note = convert_to_notes(audio_array)
+
     bpm = calculate_bpm(audio_array, sample_rate)
 
-    print('Note:', note)
     print('BPM:', bpm)
 
     chunk_size = bpm * len(audio_array) // (sample_rate*60)
     audio_array = audio_array[:len(audio_array) - len(audio_array) % chunk_size]
     audio_chunks = np.split(audio_array, len(audio_array) // chunk_size)
-    beat_length = 60 / bpm
+    # print(audio_chunks)
+    beat_length = 60 / bpm * 1000
 
     # Create a pool of processes
     pool = mp.Pool(mp.cpu_count())
 
-    notes = pool.map(convert_to_notes, audio_chunks)
+    notes = pool.starmap(convert_to_notes, zip(audio_chunks, repeat(sample_rate)))
 
-    print(f'notes: {notes[:50]}')
+    octaves = [int(note[-1]) if note is not None else None for note in notes]
+    notes = [note[:-1] if note is not None else None for note in notes]
+    
+    print(f'notes: {notes}')
+    print(octaves)
 
-    # notes = np.array([note for note in notes if note is not np.nan])
-
-    beats = [beat_length for _ in range(len(notes))]
-    print(f'beats: {beats[:50]}')
-    # melody = zip([notes, beats])
+    melody = pool.starmap(et.note_name_to_midi, zip(notes, octaves))
+    # midi_note = et.note_name_to_midi(notes[0][:-1],int(notes[0][-1])+2)
     # print(melody)
-
-    midi_notes = pool.starmap(et.note_name_to_midi, [notes, repeat(2)])
-
-    print(f'midi_notes: {midi_notes}')
+    for midi_note in melody:
+        play_midi.play_midi_note(midi_note, beat_length)
+    # print(f'midi_notes: {midi_notes}')
 
     # map(play_midi.play_midi_note, melody)

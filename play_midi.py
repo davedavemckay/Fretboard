@@ -24,6 +24,8 @@ if available_ports:
 # midiout.send_message(note_off)
 
 def play_midi_note(note, duration=1000):
+    if note is None:
+        return
     note_on = [0x90, note, 112]
     note_off = [0x80, note, 0]
     midiout.send_message(note_on)
