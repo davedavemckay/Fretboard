@@ -84,12 +84,12 @@ if __name__ == '__main__':
 
     notes = pool.map(convert_to_notes, audio_chunks)
 
-    print(f'notes: {notes[:10]}')
+    print(f'notes: {notes[:50]}')
 
     # notes = np.array([note for note in notes if note is not np.nan])
 
     beats = [beat_length for _ in range(len(notes))]
-    print(f'beats: {beats[:10]}')
+    print(f'beats: {beats[:50]}')
     # melody = zip([notes, beats])
     # print(melody)
 
