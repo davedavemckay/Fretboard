@@ -16,7 +16,7 @@ class EqualTemperament:
     def __init__(self, A4=440):
         self.A4 = A4
         self.semitone = 2 ** (1/12)
-        self.note_names = {
+        self.notes = {
             0:['C','B#'], 
             1:['C#','Db'], 
             2:['D','C##'], 
@@ -30,7 +30,8 @@ class EqualTemperament:
             10:['A#','Bb'], 
             11:['B','Cb','A##'],
         }
-        self.all_note_names = [f'{note_name[0]}{octave}' for octave in range(0, 9) for note_name in self.note_names.values()]
+        self.notes_list = [item for _,sublist in self.notes.items() for item in sublist]
+        self.all_note_names = [f'{note_name[0]}{octave}' for octave in range(0, 9) for note_name in self.notes.values()]
         self.intervals = {
             0:['1'],
             1:['b2'],
@@ -77,27 +78,46 @@ def interval_to_note_name(root, interval):
     """
     # print(interval, et.intervals.items())
     interval_index = next(key for key, value in et.intervals.items() if interval in value)
-    root_index = next((index for index, names in et.note_names.items() if root in names), None)
+    root_index = next((index for index, names in et.notes.items() if root in names), None)
     if root_index is not None:
         return et.note_names[(root_index + interval_index) % len(et.note_names)][0]
     else:
         return None
 
-def note_name_to_midi(note_name, octave):
+def note_name_to_midi_number(note_name):
     """
     Calculate the MIDI number of a note.
 
     Parameters:
-    - note_name (str): The name of the note (e.g., 'A', 'C', 'D')
-    - octave (int): The octave number of the note
+    - note_name (str): The name of the note (e.g., 'A1', 'C1', 'D2')
 
     Returns:
     - int: The MIDI number of the note
     """
     if note_name is None:
         return None
-    else:
-        return et.all_note_names.index(f'{note_name}{octave}') + 21 # MIDI number of A0 is 21
+    if not note_name[-1].isdigit():
+        return None
+    if note_name[:-1] not in et.notes_list:
+        return None
+    # print(note_name)
+    note = note_name[:-1]
+    octave = note_name[-1]
+    return et.all_note_names.index(f'{note}{octave}') + 21 # MIDI number of A0 is 21
+
+def midi_number_to_note_name(midi_number):
+    """
+    Calculate the note name of a given MIDI number.
+
+    Parameters:
+    - midi_number (int): The MIDI number of the note
+
+    Returns:
+    - str: The name of the note (e.g., 'A', 'C', 'D')
+    """
+    if midi_number < 21 or midi_number > 108:
+        return None
+    return et.all_note_names[midi_number - 21]
 
 def frequency(note_name, octave):
     """
@@ -141,3 +161,19 @@ def frequency_to_note_name(frequency):
     note = round(12 * math.log2(frequency / et.A4))
     # print(len(et.all_note_names), (note + et.all_note_names.index('A4')) % len(et.all_note_names))
     return et.all_note_names[(note + et.all_note_names.index('A4')) % len(et.all_note_names)]
+
+def transpose(note_name,semitones):
+    """
+    Transpose a note by a given number of semitones.
+    Make use of midi numbering to transpose notes.
+
+    Args:
+        note_name (str): The name of the note (e.g., 'A', 'C', 'D')
+        semitones (int): The number of semitones to transpose the note.
+
+    Returns:
+        str: The name of the transposed note (e.g., 'A', 'C', 'D')
+    """
+    if note_name is None:
+        return None
+    return midi_number_to_note_name(note_name_to_midi_number(note_name) + semitones)

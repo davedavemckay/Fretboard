@@ -12,7 +12,8 @@ available_ports = midiout.get_ports()
 
 # Attempt to open the port
 if available_ports:
-    midiout.open_port(0) # number here should match list index
+    midiout.open_port(1) # number here should match list index
+print('MIDI port open', midiout.get_port_name(1))
 
 # This is how you create a midi note, the specs are: [command, note, velocity]
 # note_on = [0x90, 60, 112]
@@ -26,8 +27,9 @@ if available_ports:
 def play_midi_note(note, duration=1):
     if note is None:
         return
-    note_on = [0x90, note, 112]
+    note_on = [0x90, note, 90]
     note_off = [0x80, note, 0]
+    
     midiout.send_message(note_on)
     time.sleep(duration/1)
     midiout.send_message(note_off)
@@ -51,6 +53,7 @@ def play_melody(melody, duration=1):
                 play_midi_note(note, duration)
             else:
                 if note != melody[i-1]:
+                    print(note)
                     play_midi_note(note, duration)
                 else:
                     time.sleep(duration/1)

@@ -93,6 +93,12 @@ def convert_to_notes(audio_array, sample_rate=44100):
 
     return note
 
+def max_fft_count(audio_array):
+    # Perform Fourier transform
+    spectrum = fft(audio_array)
+
+    return np.max(np.abs(spectrum).real)
+
 if __name__ == '__main__':
     # Example usage
     file_path = 'samples/eqt-chromo-sc.wav'
@@ -127,15 +133,17 @@ if __name__ == '__main__':
     # Create a pool of processes
     pool = mp.Pool(mp.cpu_count())
 
+    max_counts = pool.map(max_fft_count, audio_chunks)
+    normalisation_factor = max(max_counts)
+    # exit()
+
+    audio_chunks = [audio_chunk / normalisation_factor for audio_chunk in audio_chunks]
+
     notes = pool.starmap(convert_to_notes, zip(audio_chunks, repeat(sample_rate)))
-    print(notes)
-    octaves = [int(note[-1]) if note is not None else None for note in notes]
-    notes = [note[:-1] if note is not None else None for note in notes]
     
     print(f'notes: {notes}')
-    print(octaves)
     # exit()
-    melody = pool.starmap(et.note_name_to_midi, zip(notes, octaves))
+    melody = pool.map(et.note_name_to_midi_number, notes)
     # midi_note = et.note_name_to_midi(notes[0][:-1],int(notes[0][-1])+2)
     print(melody)
     print(len(melody))
@@ -154,3 +162,9 @@ if __name__ == '__main__':
 
     # map(play_midi.play_midi_note, melody)
     # play_midi.play_midi_note(89,beat_length)
+
+    octave_down = pool.starmap(et.transpose, zip(notes, repeat(-12)))
+    print(octave_down)
+    octave_down_melody = pool.map(et.note_name_to_midi_number, octave_down)
+    play_midi.play_melody(octave_down_melody, chunk_size/sample_rate)
+
