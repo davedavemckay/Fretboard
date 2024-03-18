@@ -84,14 +84,12 @@ def convert_to_notes(audio_array, sample_rate=44100):
     # print(dominant_frequency_index)
     # print(spectrum[dominant_frequency_index])
     dominant_frequency = dominant_frequency_index * sample_rate / len(audio_array)
-    print(dominant_frequency)
+    # if dominant_frequency > 0:
+    #     print(dominant_frequency)
     # exit()
 
     # Convert dominant frequency to note
-    if dominant_frequency == 0:
-        note = None
-    else:
-        note = et.frequency_to_note_name(dominant_frequency)
+    note = et.frequency_to_note_name(dominant_frequency)
 
     return note
 
@@ -101,22 +99,27 @@ if __name__ == '__main__':
     audio_array, sample_rate = read_wav_file(file_path)
 
     bpm = calculate_bpm(audio_array, sample_rate)
+    bps = bpm / 60
+    beats = len(audio_array) / sample_rate * bps
     print(audio_sample_length(audio_array, sample_rate),'seconds')
 
     print('BPM:', bpm)
+    print('BPS:', bps)
+    print('Sample rate:', sample_rate)
+    print('Audio array length:', len(audio_array), 'samples')
     # exit()
-    chunk_size = bpm * len(audio_array) // (sample_rate*60)
+    chunk_size = int(len(audio_array) / beats / 16)
     # print(len(audio_array))
     # print(bpm)
     # print(sample_rate)
-    print(chunk_size)
+    print('chunk size',chunk_size,'samples')
+    print('chunk size',chunk_size/sample_rate,'seconds')
     audio_array = audio_array[:len(audio_array) - len(audio_array) % chunk_size]
-    # print(len(audio_array))
+    print(len(audio_array))
     # print(audio_array.shape)
     audio_chunks = np.split(audio_array, len(audio_array) // chunk_size)
-    # print(len(audio_chunks))
+    print('num chunks',len(audio_chunks))
     # print(audio_chunks[7])
-    beat_length = 60 / bpm * 1000
     # print(beat_length)
     # print(convert_to_notes(audio_chunks[7], sample_rate))
     # exit()
@@ -125,23 +128,29 @@ if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
 
     notes = pool.starmap(convert_to_notes, zip(audio_chunks, repeat(sample_rate)))
-    octaves = [int(note[-1]) for note in notes if note is not None]
-    notes = [note[:-1] for note in notes if note is not None]
+    print(notes)
+    octaves = [int(note[-1]) if note is not None else None for note in notes]
+    notes = [note[:-1] if note is not None else None for note in notes]
     
-    
-    
-    # print(f'notes: {notes}')
-    # print(octaves)
+    print(f'notes: {notes}')
+    print(octaves)
     # exit()
     melody = pool.starmap(et.note_name_to_midi, zip(notes, octaves))
     # midi_note = et.note_name_to_midi(notes[0][:-1],int(notes[0][-1])+2)
-    print(len(melody) * chunk_size / 1000 / 60)
-    for midi_note in melody:
-        if midi_note is not None:
-            sleep_time = chunk_size / 1000 / 60
-            sleep(sleep_time)
-        else:
-            play_midi.play_midi_note(midi_note, beat_length)
+    print(melody)
+    print(len(melody))
+    print(len(melody) * chunk_size/sample_rate + chunk_size/sample_rate)
+    sleep_time = chunk_size/sample_rate
+    # for midi_note in melody:
+    #     if midi_note is not None:
+            
+    #         sleep(sleep_time)
+    #     else:
+    #         play_midi.play_midi_note(midi_note, chunk_size/sample_rate)
+    # sleep(sleep_time)
+    play_midi.play_melody(melody, chunk_size/sample_rate)
+    print(chunk_size/sample_rate)
     # print(f'midi_notes: {midi_notes}')
 
     # map(play_midi.play_midi_note, melody)
+    # play_midi.play_midi_note(89,beat_length)

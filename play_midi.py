@@ -23,21 +23,35 @@ if available_ports:
 # time.sleep(1.1)
 # midiout.send_message(note_off)
 
-def play_midi_note(note, duration=1000):
+def play_midi_note(note, duration=1):
     if note is None:
         return
     note_on = [0x90, note, 112]
     note_off = [0x80, note, 0]
     midiout.send_message(note_on)
-    time.sleep(duration/1000)
+    time.sleep(duration/1)
     midiout.send_message(note_off)
 
-def play_midi_chord(chord, duration=1000):
+def play_midi_chord(chord, duration=1):
     for note in chord:
         note_on = [0x90, note, 112]
         note_off = [0x80, note, 0]
         midiout.send_message(note_on)
-    time.sleep(duration/1000)
+    time.sleep(duration/1)
     for note in chord:
         note_off = [0x80, note, 0]
     midiout.send_message(note_off)
+
+def play_melody(melody, duration=1):
+    for i, note in enumerate(melody):
+        if note is None:
+            time.sleep(duration/1)
+        else:
+            if i == 0:
+                play_midi_note(note, duration)
+            else:
+                if note != melody[i-1]:
+                    play_midi_note(note, duration)
+                else:
+                    time.sleep(duration/1)
+    time.sleep(duration/1)

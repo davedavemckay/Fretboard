@@ -139,4 +139,5 @@ def frequency_to_note_name(frequency):
     if frequency <= 0:
         return None
     note = round(12 * math.log2(frequency / et.A4))
-    return et.all_note_names[note % len(et.all_note_names)]
+    # print(len(et.all_note_names), (note + et.all_note_names.index('A4')) % len(et.all_note_names))
+    return et.all_note_names[(note + et.all_note_names.index('A4')) % len(et.all_note_names)]
