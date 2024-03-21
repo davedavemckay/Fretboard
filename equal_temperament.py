@@ -94,6 +94,8 @@ def note_name_to_midi_number(note_name):
     Returns:
     - int: The MIDI number of the note
     """
+    if type(note_name) == list:
+        return sorted([note_name_to_midi_number(note) for note in note_name])
     if note_name is None:
         return None
     if not note_name[-1].isdigit():

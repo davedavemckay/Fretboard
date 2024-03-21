@@ -93,6 +93,54 @@ def convert_to_notes(audio_array, sample_rate=44100):
 
     return note
 
+
+def convert_to_multinotes(audio_array, sample_rate=44100, max_notes=3):
+    """
+    Converts an audio array into a list of note names.
+    The number simultaneously playing notes to extract (such as in a chord) is determined by the max_notes parameter.
+
+    Parameters:
+    - audio_array (array-like): The input audio array.
+    - sample_rate (int, optional): The sample rate of the audio. Default is 44100.
+    - max_notes (int, optional): The maximum number of notes to extract. Default is 3.
+
+    Returns:
+    - notes (list): A list of note names extracted from the audio.
+
+    """
+    # Perform Fourier transform
+    spectrum = fft(audio_array)
+    spectrum = [abs(x.real) for x in spectrum]
+    spectrum_stack = list(spectrum)
+    # print(spectrum)
+    frequency_indices = []
+    unique_frequency_indices = []
+    while len(unique_frequency_indices) < max_notes:
+        # Find dominant frequency
+        if len(spectrum_stack) == 0:
+            continue
+        frequency_indices.append(spectrum_stack.pop(np.argmax(np.abs(spectrum_stack))))
+        unique_frequency_indices = list(set(frequency_indices))
+    
+
+    # Get the maximum magnitude
+    max_magnitude = np.max(np.abs(spectrum))
+
+    # Remove any frequencies with magnitude less than 10% of the maximum frequency
+    print('ufi',unique_frequency_indices)
+    unique_frequency_indices = [i for i in unique_frequency_indices if i == 0 or np.abs(spectrum.index(i)) >= 0.1 * max_magnitude]
+
+    # Convert frequency indices to frequencies
+    dominant_frequencies = [unique_frequency * sample_rate / len(audio_array) for unique_frequency in unique_frequency_indices]
+    # if dominant_frequency > 0:
+    #     print(dominant_frequency)
+    # exit()
+
+    # Convert dominant frequency to note
+    notes = [et.frequency_to_note_name(dominant_frequency) for dominant_frequency in dominant_frequencies]
+
+    return notes
+
 def max_fft_count(audio_array):
     # Perform Fourier transform
     spectrum = fft(audio_array)
@@ -104,7 +152,7 @@ if __name__ == '__main__':
     file_path = 'samples/eqt-chromo-sc.wav'
     audio_array, sample_rate = read_wav_file(file_path)
 
-    bpm = calculate_bpm(audio_array, sample_rate)
+    bpm = 60#calculate_bpm(audio_array, sample_rate)
     bps = bpm / 60
     beats = len(audio_array) / sample_rate * bps
     print(audio_sample_length(audio_array, sample_rate),'seconds')
@@ -156,7 +204,7 @@ if __name__ == '__main__':
     #     else:
     #         play_midi.play_midi_note(midi_note, chunk_size/sample_rate)
     # sleep(sleep_time)
-    play_midi.play_melody(melody, chunk_size/sample_rate)
+    # play_midi.play_melody(melody, chunk_size/sample_rate)
     print(chunk_size/sample_rate)
     # print(f'midi_notes: {midi_notes}')
 
@@ -166,5 +214,10 @@ if __name__ == '__main__':
     octave_down = pool.starmap(et.transpose, zip(notes, repeat(-12)))
     print(octave_down)
     octave_down_melody = pool.map(et.note_name_to_midi_number, octave_down)
-    play_midi.play_melody(octave_down_melody, chunk_size/sample_rate)
+    # play_midi.play_melody(octave_down_melody, chunk_size/sample_rate)
 
+    multinotes = pool.starmap(convert_to_multinotes, zip(audio_chunks, repeat(sample_rate), repeat(3)))
+    print(f'multinotes: {multinotes}')
+    chord_melody = pool.map(et.note_name_to_midi_number, multinotes)
+    print(f'chord melody: {chord_melody}')
+    play_midi.play_chord_melody(chord_melody, chunk_size/sample_rate)
